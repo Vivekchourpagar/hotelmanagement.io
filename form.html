@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Your Table</title>
+    <!-- Include Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        .popup.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans antialiased">
+
+    <!-- Header -->
+    <header class="text-center py-8 bg-blue-600 text-white">
+        <h1 class="text-4xl font-bold">Book Your Table</h1>
+        <p class="mt-2 text-xl">Reserve a spot at your favorite place</p>
+    </header>
+
+    <!-- Form Section -->
+    <div class="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg mt-10">
+        <form id="bookingForm" class="space-y-6">
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Name:</label>
+                <input type="text" id="name" name="Your-name" required class="mt-1 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600" />
+            </div>
+
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email:</label>
+                <input type="email" id="email" required class="mt-1 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600" />
+            </div>
+
+            <div>
+                <label for="date" class="block text-sm font-medium text-gray-700">Date:</label>
+                <input type="date" id="date" required class="mt-1 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600" />
+            </div>
+
+            <div>
+                <label for="time" class="block text-sm font-medium text-gray-700">Time:</label>
+                <input type="time" id="time" required class="mt-1 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600" />
+            </div>
+
+            <div>
+                <label for="guests" class="block text-sm font-medium text-gray-700">Guests:</label>
+                <input type="number" id="guests" min="1" required class="mt-1 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600" />
+            </div>
+
+            <div>
+                <button type="submit" class="w-full py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition">Book Now</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Success Popup -->
+    <div id="popup" class="popup bg-white rounded-lg shadow-md">
+        <p class="text-lg text-center p-4">Table booked successfully!</p>
+        <div class="flex justify-center">
+            <button onclick="closePopup()" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Close</button>
+        </div>
+    </div>
+
+    <!-- Booked Tables Section -->
+    <div id="bookedTables" class="max-w-4xl mx-auto mt-10 space-y-4"></div>
+
+    <script>
+        // Event listener for form submission
+        document.getElementById('bookingForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            // Collect form data
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+            const guests = document.getElementById('guests').value;
+
+            // Create a booking object
+            const booking = {
+                name,
+                email,
+                date,
+                time,
+                guests
+            };
+
+            // Store the booking in local storage
+            let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+            bookings.push(booking);
+            localStorage.setItem('bookings', JSON.stringify(bookings));
+
+            // Show the success popup
+            document.getElementById('popup').classList.add('active');
+
+            // Clear the form fields
+            document.getElementById('bookingForm').reset();
+
+            // Refresh the displayed bookings
+            displayBookings();
+        });
+
+        // Close the popup
+        function closePopup() {
+            document.getElementById('popup').classList.remove('active');
+        }
+
+        // Display saved bookings
+        function displayBookings() {
+            const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+            const bookedTablesDiv = document.getElementById('bookedTables');
+            bookedTablesDiv.innerHTML = ''; // Clear current list
+
+            bookings.forEach((booking, index) => {
+                const bookingDiv = document.createElement('div');
+                bookingDiv.classList.add('bg-white', 'shadow-md', 'p-4', 'rounded-lg', 'space-y-2');
+                bookingDiv.innerHTML = `
+                    <p><strong>Name:</strong> ${booking.name}</p>
+                    <p><strong>Email:</strong> ${booking.email}</p>
+                    <p><strong>Date:</strong> ${booking.date}</p>
+                    <p><strong>Time:</strong> ${booking.time}</p>
+                    <p><strong>Guests:</strong> ${booking.guests}</p>
+                    <button class="bg-red-600 text-white py-1 px-4 rounded-md hover:bg-red-700 mt-2" onclick="deleteBooking(${index})">Delete</button>
+                `;
+                bookedTablesDiv.appendChild(bookingDiv);
+            });
+        }
+
+        // Delete a booking
+        function deleteBooking(index) {
+            let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+            bookings.splice(index, 1); // Remove the booking at the given index
+            localStorage.setItem('bookings', JSON.stringify(bookings)); // Update local storage
+
+            displayBookings(); // Re-render the list of bookings
+        }
+
+        // Load bookings on page load
+        window.onload = displayBookings;
+    </script>
+</body>
+</html>
